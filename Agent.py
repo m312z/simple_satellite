@@ -64,7 +64,6 @@ class PDDLAgent(Agent):
         # check next action
         if sim.sim_time > self.current_action[0]:
 
-            print(sim.sim_time, self.current_action)
             # prepare current action
             action = (self.current_action[1], self.current_action[2], self.current_action[3])
 
