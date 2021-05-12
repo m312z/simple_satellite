@@ -4,7 +4,7 @@ from simulation.GoalReferee import GoalReferee
 
 class SatelliteSim:
 
-    MAX_ORBITS = 3
+    MAX_ORBITS = 30
 
     PERIOD = 600
     ACTION_THRESHOLD = 6
