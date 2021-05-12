@@ -4,6 +4,8 @@ from simulation.GoalReferee import GoalReferee
 
 class SatelliteSim:
 
+    MAX_ORBITS = 3
+
     PERIOD = 600
     ACTION_THRESHOLD = 6
 
@@ -55,6 +57,8 @@ class SatelliteSim:
         # position is time modulo period
         self.sim_time += dt
         orbit = math.floor(self.sim_time / SatelliteSim.PERIOD)
+        if orbit>=SatelliteSim.MAX_ORBITS:
+            return True
 
         # update orbit position
         self.pos = self.pos + dt
@@ -72,7 +76,7 @@ class SatelliteSim:
             self.satellite_busy_time = self.satellite_busy_time - dt
 
         if not action or self.satellite_busy_time > 0:
-            return
+            return False
 
         if action[0] == SatelliteSim.ACTION_TAKE_IMAGE:
 
@@ -80,35 +84,35 @@ class SatelliteSim:
             target = self.targets[action[1]]
             if not target[0]-self.ACTION_THRESHOLD < self.pos < target[1]+self.ACTION_THRESHOLD:
                 print("WARN: action could not be accomplished as target out of range (take_image)")
-                return
+                return False
 
             # check mem location is really empty
             if self.images[action[2]] >= 0:
                 print("WARN: action could not be accomplished as memory not empty (take_image)")
-                return
+                return False
 
             # add image to first empty memory location
             self.satellite_busy_time = SatelliteSim.DURATION_TAKE_IMAGE
             self.images[action[2]] = action[1]
             self.last_action = action
-            return
+            return False
 
         if action[0] == SatelliteSim.ACTION_DUMP:
 
             # check ground station is in range (relax threshold by speed for checking)
             if not any([gs[0]-self.ACTION_THRESHOLD < self.pos < gs[1]+self.ACTION_THRESHOLD for gs in self.groundStations]):
                 print("WARN: action could not be accomplished as ground station out of range (dump)")
-                return
+                return False
 
             # check mem location holds that image
             if self.images[action[2]] != action[1]:
                 print("WARN: action could not be accomplished as memory does not hold required image (dump)")
-                return
+                return False
 
             # check mem location is analysed
             if not self.analysis[action[2]]:
                 print("WARN: action could not be accomplished as memory not analysed (dump)")
-                return
+                return False
 
             # dump image and reset memory location
             self.satellite_busy_time = SatelliteSim.DURATION_DUMP
@@ -118,14 +122,14 @@ class SatelliteSim:
 
             # score the goal value
             self.goalRef.evaluateDump(orbit, action[1])
-            return
+            return False
 
         if action[0] == SatelliteSim.ACTION_ANALYSE:
 
             # check mem location holds that image
             if self.images[action[2]] != action[1]:
                 print("WARN: action could not be accomplished as memory does not hold required image (analyse)")
-                return
+                return False
 
             # set image to analysed or discarded
             self.satellite_busy_time = SatelliteSim.DURATION_ANALYSE
@@ -135,4 +139,4 @@ class SatelliteSim:
             else:
                 self.analysis[action[2]] = False
                 self.images[action[2]] = -1
-            return
+            return False

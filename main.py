@@ -1,3 +1,5 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 from agent.AgentGreedy import GreedyAgent
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
         view.drawSim(sim)
         action = agent.getAction(sim)
-        sim.update(action, 0.5)
+        finished = finished or sim.update(action, 0.5)
         clock.tick(60)
 
     pygame.quit()
