@@ -1,7 +1,5 @@
-import math
-
-from Simulation import SatelliteSim
-import requests, sys
+from simulation.Simulation import SatelliteSim
+import requests
 
 
 def generatePlan(domain: str, problem: str, plan: str):

@@ -21,7 +21,7 @@ class SatelliteSim:
 
         # satellite state
         self.pos = 0
-        self.speed = 1
+        self.last_action = None
 
         # planet position
         self.groundStations = []
@@ -32,7 +32,7 @@ class SatelliteSim:
         self.analysis = [False] * SatelliteSim.MEMORY_SIZE
         self.satellite_busy_time = 0
 
-        # goal state
+        # goals
         self.single_goals = {}
         self.value = 0
 
@@ -59,16 +59,16 @@ class SatelliteSim:
     def update(self, action, dt: float):
 
         # position is time modulo period
-        self.sim_time += self.speed * dt
+        self.sim_time += 1 * dt
 
         # update orbit position
-        self.pos = self.pos + self.speed * dt
+        self.pos = self.pos + 1 * dt
         while self.pos > SatelliteSim.PERIOD:
             self.pos = self.pos - SatelliteSim.PERIOD
 
         # count down action duration
         if self.satellite_busy_time > 0:
-            self.satellite_busy_time = self.satellite_busy_time - self.speed * dt
+            self.satellite_busy_time = self.satellite_busy_time - 1 * dt
 
         if not action or self.satellite_busy_time > 0:
             return
@@ -89,6 +89,7 @@ class SatelliteSim:
             # add image to first empty memory location
             self.satellite_busy_time = SatelliteSim.DURATION_TAKE_IMAGE
             self.images[action[2]] = action[1]
+            self.last_action = action
             return
 
         if action[0] == SatelliteSim.ACTION_DUMP:
@@ -112,6 +113,7 @@ class SatelliteSim:
             self.satellite_busy_time = SatelliteSim.DURATION_DUMP
             self.analysis[action[2]] = False
             self.images[action[2]] = -1
+            self.last_action = action
 
             # score the goal value
             if action[1] in self.single_goals:
@@ -128,6 +130,7 @@ class SatelliteSim:
 
             # set image to analysed or discarded
             self.satellite_busy_time = SatelliteSim.DURATION_ANALYSE
+            self.last_action = action
             if random.random() > 0.0:
                 self.analysis[action[2]] = True
             else:

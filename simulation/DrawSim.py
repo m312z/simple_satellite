@@ -1,6 +1,6 @@
 import math
 import pygame
-from Simulation import SatelliteSim
+from simulation.Simulation import SatelliteSim
 
 
 class SatelliteView:
@@ -89,17 +89,20 @@ class SatelliteView:
             pygame.draw.rect(self.screen, SatelliteView.WHITE, [offset + index * (SatelliteView.IMAGE_SIZE * 1.2),
                                                                 SatelliteView.IMAGE_SIZE, SatelliteView.IMAGE_SIZE,
                                                                 SatelliteView.IMAGE_SIZE])
-            if image >= 0 and sim.analysis[index]:
-                pygame.draw.rect(self.screen, SatelliteView.PURPLE,
-                                 [offset + index * (SatelliteView.IMAGE_SIZE * 1.2) + SatelliteView.IMAGE_SIZE * 0.1,
-                                  SatelliteView.IMAGE_SIZE * 1.1, SatelliteView.IMAGE_SIZE * 0.8,
-                                  SatelliteView.IMAGE_SIZE * 0.8])
-            if image >= 0 and not sim.analysis[index]:
-                pygame.draw.rect(self.screen, SatelliteView.ORANGE,
-                                 [offset + index * (SatelliteView.IMAGE_SIZE * 1.2) + SatelliteView.IMAGE_SIZE * 0.1,
-                                  SatelliteView.IMAGE_SIZE * 1.1, SatelliteView.IMAGE_SIZE * 0.8,
-                                  SatelliteView.IMAGE_SIZE * 0.8])
             if image >= 0:
+                panelColor = SatelliteView.BLACK
+                if sim.analysis[index] and sim.satellite_busy_time > 0 \
+                        and sim.last_action[0] == SatelliteSim.ACTION_ANALYSE \
+                        and sim.last_action[2] == index:
+                    panelColor = [o + (p - o)*(sim.satellite_busy_time/SatelliteSim.DURATION_ANALYSE) for p,o in zip(SatelliteView.ORANGE, SatelliteView.PURPLE)]
+                elif sim.analysis[index]:
+                    panelColor = SatelliteView.PURPLE
+                else:
+                    panelColor = SatelliteView.ORANGE
+                pygame.draw.rect(self.screen, panelColor,
+                             [offset + index * (SatelliteView.IMAGE_SIZE * 1.2) + SatelliteView.IMAGE_SIZE * 0.1,
+                              SatelliteView.IMAGE_SIZE * 1.1, SatelliteView.IMAGE_SIZE * 0.8,
+                              SatelliteView.IMAGE_SIZE * 0.8])
                 self.screen.blit(self.text_digits[image], (
                 offset + index * (SatelliteView.IMAGE_SIZE * 1.2) + SatelliteView.IMAGE_SIZE * 0.2,
                 SatelliteView.IMAGE_SIZE * 1.2))
