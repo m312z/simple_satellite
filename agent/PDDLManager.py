@@ -1,7 +1,5 @@
-import math
-
-from Simulation import SatelliteSim
-import requests, sys
+from simulation.Simulation import SatelliteSim
+import requests
 
 
 def generatePlan(domain: str, problem: str, plan: str):
@@ -50,8 +48,8 @@ def writePDDLProblem(sim: SatelliteSim, file: str, orbits=5):
                 f.write("  (at " + str(round(end, 3)) + " (not (dump_available)))\n")
         f.write(")\n")
         f.write("(:goal (and\n")
-        for index, target in enumerate(sim.single_goals):
-            f.write("  (image_dumped img" + str(index) + ")\n")
+        for target in sim.goalRef.single_goals:
+            f.write("  (image_dumped img" + str(target) + ")\n")
         f.write(")))\n")
         f.close()
 
