@@ -13,15 +13,15 @@ if __name__ == '__main__':
 
     # create simulation
     sim = SatelliteSim()
-    sim.initRandomStations(1)
+    sim.initRandomStations(2)
     sim.initRandomTargets(10)
-    sim.initRandomGoals(3)
+    sim.goalRef.generateSingleGoals(sim.targets, 5)
+    sim.goalRef.generateCampaigns(sim.targets, sim.goalRef.MAX_CAMPAIGNS)
     view = SatelliteView()
 
     # create agent
     agent = PDDLAgent()
-    agent.generatePlan(sim)
-    agent = GreedyAgent()
+    #agent = GreedyAgent()
 
     while not finished:
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
         view.drawSim(sim)
         action = agent.getAction(sim)
-        sim.update(action, 1)
+        sim.update(action, 0.5)
         clock.tick(60)
 
     pygame.quit()

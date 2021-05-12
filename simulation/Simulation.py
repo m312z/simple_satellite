@@ -1,4 +1,6 @@
+import math
 import random
+from simulation.GoalReferee import GoalReferee
 
 class SatelliteSim:
 
@@ -33,8 +35,7 @@ class SatelliteSim:
         self.satellite_busy_time = 0
 
         # goals
-        self.single_goals = {}
-        self.value = 0
+        self.goalRef = GoalReferee()
 
     def initRandomStations(self, amount):
         for i in range(amount):
@@ -46,29 +47,29 @@ class SatelliteSim:
             s = random.random()*(SatelliteSim.PERIOD-5)
             self.targets.append((s, s+5))
 
-    def initRandomGoals(self, amount):
-        images = list(range(len(self.targets)))
-        goals = random.sample(images, amount)
-        for g in goals:
-            self.single_goals[g] = random.random()
-        print(self.single_goals)
-
     def update(self, dt: float):
         self.update(None, dt)
 
     def update(self, action, dt: float):
 
         # position is time modulo period
-        self.sim_time += 1 * dt
+        self.sim_time += dt
+        orbit = math.floor(self.sim_time / SatelliteSim.PERIOD)
 
         # update orbit position
-        self.pos = self.pos + 1 * dt
+        self.pos = self.pos + dt
         while self.pos > SatelliteSim.PERIOD:
             self.pos = self.pos - SatelliteSim.PERIOD
 
+        if self.pos <= dt:
+            images = [ i for i in self.targets if i not in self.goalRef.single_goals ]
+            self.goalRef.generateSingleGoals(self.targets,random.randint(0,len(images)-1))
+            self.goalRef.generateCampaigns(self.targets, random.randint(0, 1))
+            self.goalRef.checkCampaignFailure(orbit)
+
         # count down action duration
         if self.satellite_busy_time > 0:
-            self.satellite_busy_time = self.satellite_busy_time - 1 * dt
+            self.satellite_busy_time = self.satellite_busy_time - dt
 
         if not action or self.satellite_busy_time > 0:
             return
@@ -116,9 +117,7 @@ class SatelliteSim:
             self.last_action = action
 
             # score the goal value
-            if action[1] in self.single_goals:
-                self.value += self.single_goals[action[1]]
-                del self.single_goals[action[1]]
+            self.goalRef.evaluateDump(orbit, action[1])
             return
 
         if action[0] == SatelliteSim.ACTION_ANALYSE:
